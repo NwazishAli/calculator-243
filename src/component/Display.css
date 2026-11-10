@@ -5,9 +5,33 @@
   font-weight: 200;
   flex: 0 0 auto;
   width: 100%;
+  position: relative;
 }
 
 .component-display > div {
   font-size: 2.5rem;
   padding: 0.2rem 0.7rem 0.1rem 0.5rem;
+}
+
+/* Sits at the left edge of the read-out so it costs no vertical space. The
+   opaque background keeps it legible if a long result grows underneath it. */
+.component-display-toggle {
+  position: absolute;
+  left: 0.4rem;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1;
+  background-color: #6f7080;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  border-radius: 0.15rem;
+  color: white;
+  cursor: pointer;
+  font-size: 0.6rem;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  padding: 0.1rem 0.3rem;
+}
+
+.component-display-toggle:hover {
+  background-color: #f5923e;
 }

@@ -27,6 +27,38 @@ Usage
 
 
 
+Scientific mode
+---
+
+Press **SCI** at the left of the read-out to slide a scientific keypad in above
+the standard keys (it becomes **BASIC**, so the same button switches back). The
+mode is interface state, so `AC` clears the calculation without closing the
+keypad.
+
+| | | | | |
+|---|---|---|---|---|
+| DEG/RAD | sin | cos | tan | π |
+| x² | x³ | xʸ | √x | ∛x |
+| ln | log | eˣ | 10ˣ | e |
+| 1/x | x! | \|x\| | mod | ⌫ |
+
+* **DEG/RAD** sets the unit for sin, cos and tan, and shows the current one.
+* Unary functions (`sin`, `√x`, `x!`, …) apply to the number on the display and
+  can be chained — `9 √x x²` returns 9.
+* `xʸ` and `mod` take two operands and behave like `+`, `-`, `x` and `÷`, so a
+  pending operation survives a unary function: `5 + 3 x² =` gives 14.
+* Out-of-domain input (`√x` of a negative, `ln` of 0, `tan` of 90°, `1/x` of 0,
+  divide by zero) shows `Error` instead of `NaN`, and the keypad stays inert
+  until a digit, `.` or a constant starts a fresh value.
+* Results too long to read — 170! is a 272-character integer — fall back to
+  twelve significant digits, while `0.1 x²` stays exactly `0.01` because
+  big.js does the arithmetic.
+
+`tan` of an odd multiple of 90° is rejected on purpose: `Math.tan(Math.PI / 2)`
+returns `1.633e16` rather than failing.
+
+
+
 Hosting on GitHub Pages
 ---
 
