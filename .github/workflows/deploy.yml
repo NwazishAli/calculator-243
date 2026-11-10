@@ -1,0 +1,85 @@
+# Build the React (create-react-app) app and deploy it to GitHub Pages.
+#
+# This replaces the previous Jekyll workflow: Jekyll does not compile JSX or
+# bundle the app, so it never produced a working site for this project. The
+# build output of `npm run build` (the `build/` folder) is what gets published.
+name: Build and deploy to GitHub Pages
+
+on:
+  # Runs on pushes targeting the default branch
+  push:
+    branches: ["master"]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment, skipping runs queued between the run
+# in-progress and latest queued. However, do NOT cancel in-progress runs as we
+# want to allow these production deployments to complete.
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  # Build job
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      # Reads the Pages configuration (base URL, etc.) and fails early if Pages
+      # is not enabled for this repository.
+      - name: Setup Pages
+        uses: actions/configure-pages@v6
+
+      # `--legacy-peer-deps` is required: the committed lockfile predates npm 7,
+      # which started auto-installing peer dependencies (@typescript-eslint/parser
+      # asks for `typescript: *`). Without the flag `npm ci` aborts with
+      # "package.json and package-lock.json are not in sync".
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Run tests
+        run: npm test -- --watchAll=false
+        env:
+          CI: true
+
+      - name: Build
+        run: npm run build
+        env:
+          CI: true
+          # react-scripts 3 ships webpack 4, which hashes module ids with MD4.
+          # MD4 was dropped from OpenSSL 3 (used by Node 17+), so without this
+          # the build dies with ERR_OSSL_EVP_UNSUPPORTED.
+          NODE_OPTIONS: --openssl-legacy-provider
+
+      # Publishes the CRA output directory (`build/`), not Jekyll's `_site/`.
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: ./build
+
+  # Deployment job
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
