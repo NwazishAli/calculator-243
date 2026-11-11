@@ -171,3 +171,73 @@ describe("calculate", function() {
     operation: 'x'
   });
 });
+
+describe("calculate (scientific)", function() {
+  // The keypad and angle-unit toggles are interface state.
+  test(["SCI"], { scientific: true });
+  test(["SCI", "SCI"], { scientific: false });
+  test(["ANGLE"], { angleUnit: "RAD" });
+  test(["ANGLE", "ANGLE"], { angleUnit: "DEG" });
+
+  // AC clears the calculation but leaves the keypad and angle unit alone.
+  test(["SCI", "ANGLE", "5", "AC"], { scientific: true, angleUnit: "RAD" });
+
+  // Unary functions apply to whatever is on the display, and chain.
+  test(["9", "SQRT"], { next: "3" });
+  test(["9", "SQRT", "SQUARE"], { next: "9" });
+  test(["5", "FACTORIAL"], { next: "120" });
+  test(["1", "0", "0", "LOG"], { next: "2" });
+  test(["4", "+/-", "ABS"], { next: "4" });
+
+  // Trigonometry follows the angle unit.
+  test(["3", "0", "SIN"], { next: "0.5" });
+  test(["3", "0", "SIN", "ANGLE"], { next: "0.5", angleUnit: "RAD" });
+  test(["ANGLE", "3", "0", "SIN"], {
+    angleUnit: "RAD",
+    next: "-0.988031624093",
+  });
+  test(["9", "0", "TAN"], { next: "Error" });
+
+  // Constants behave like a typed number, so they can start a calculation.
+  test(["PI"], { total: "3.14159265359" });
+  test(["PI", "+", "2", "="], { total: "5.14159265359" });
+  test(["2", "x", "E"], { total: "2", operation: "x", next: "2.71828182846" });
+
+  // A unary function keeps a pending operation alive: 5 + 3^2 =
+  test(["5", "+", "3", "SQUARE", "="], { total: "14" });
+
+  // POW and MOD are binary and ride the same path as +, -, x and ÷.
+  test(["2", "POW", "1", "0", "="], { total: "1024" });
+  test(["2", "POW", "0", ".", "5", "="], { total: "1.41421356237" });
+  test(["2", "POW"], { total: "2", operation: "POW" });
+  test(["7", "MOD", "3", "="], { total: "1" });
+  test(["2", "MOD", "0", "="], { total: "Error" });
+
+  // Out-of-domain input shows an error rather than throwing or returning NaN.
+  test(["4", "+/-", "SQRT"], { next: "Error" });
+  test(["0", "RECIPROCAL"], { next: "Error" });
+  test(["0", "LN"], { next: "Error" });
+  test(["5", "÷", "0", "="], { total: "Error" });
+
+  // While an error is showing every key is inert except one that starts a new
+  // number, so the string can never be fed back into Big().
+  test(["0", "RECIPROCAL", "="], { next: "Error" });
+  test(["0", "RECIPROCAL", "+"], { next: "Error" });
+  test(["0", "RECIPROCAL", "7"], { next: "7" });
+  test(["0", "RECIPROCAL", "."], { next: "0." });
+  test(["0", "RECIPROCAL", "PI"], { next: "3.14159265359" });
+  test(["0", "RECIPROCAL", "AC"], {});
+  // An error discards the whole calculation, so a later = has nothing to do.
+  test(["5", "+", "0", "RECIPROCAL", "3", "="], { next: "3" });
+
+  // The blank display reads as 0, and 10^0 is 1.
+  test(["POWTEN"], { total: "1" });
+  test(["1", "0", "POWTEN"], { next: "10000000000" });
+
+  // Backspace.
+  test(["1", "2", "3", "DEL"], { next: "12" });
+  test(["1", "DEL"], { next: "0" });
+  test(["9", "SQRT", "DEL"], { next: "0" });
+  test(["5", "+", "3", "DEL"], { total: "5", operation: "+", next: "0" });
+  test(["DEL"], {});
+});

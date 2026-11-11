@@ -3,4 +3,7 @@
   flex-direction: column;
   flex-wrap: wrap;
   height: 100%;
+  /* Scientific mode adds four rows to the keypad. If they ever do not fit the
+     viewport, scroll rather than leave keys unreachable. */
+  overflow-y: auto;
 }

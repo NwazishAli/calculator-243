@@ -9,6 +9,8 @@ export default class App extends React.Component {
     total: null,
     next: null,
     operation: null,
+    scientific: false,
+    angleUnit: "DEG",
   };
 
   handleClick = buttonName => {
@@ -17,9 +19,21 @@ export default class App extends React.Component {
 
   render() {
     return (
-      <div className="component-app">
-        <Display value={this.state.next || this.state.total || "0"} />
-        <ButtonPanel clickHandler={this.handleClick} />
+      <div
+        className={
+          this.state.scientific ? "component-app scientific" : "component-app"
+        }
+      >
+        <Display
+          value={this.state.next || this.state.total || "0"}
+          scientific={this.state.scientific}
+          clickHandler={this.handleClick}
+        />
+        <ButtonPanel
+          clickHandler={this.handleClick}
+          scientific={this.state.scientific}
+          angleUnit={this.state.angleUnit}
+        />
       </div>
     );
   }

@@ -5,6 +5,8 @@ import "./Button.css";
 export default class Button extends React.Component {
   static propTypes = {
     name: PropTypes.string,
+    label: PropTypes.string,
+    className: PropTypes.string,
     orange: PropTypes.bool,
     wide: PropTypes.bool,
     clickHandler: PropTypes.func,
@@ -19,11 +21,14 @@ export default class Button extends React.Component {
       "component-button",
       this.props.orange ? "orange" : "",
       this.props.wide ? "wide" : "",
+      this.props.className || "",
     ];
 
     return (
       <div className={className.join(" ").trim()}>
-        <button onClick={this.handleClick}>{this.props.name}</button>
+        <button onClick={this.handleClick}>
+          {this.props.label || this.props.name}
+        </button>
       </div>
     );
   }
